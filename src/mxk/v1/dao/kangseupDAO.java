@@ -33,6 +33,7 @@ public class kangseupDAO {
 
     private static String payTest = "select lpay from class where lesson=?";
     private static String kLoad = "insert into REGISTER(rno,mno,lesson,rldate) values (sq_rno.nextval,?,?,?)";
+    private static String updatekang = "update register set lesson=?, rldate=? where rno=?";
 
     //예상비용불러오기
     public  int payCk(String s1){
@@ -77,6 +78,27 @@ public class kangseupDAO {
         }
 
     }
+
+    //수정하기
+    public  void updateKS(String rsl, String as,String rno){
+        Connection conn=null;
+        PreparedStatement pstmt=null;
+        try {
+            conn = openConn();
+            pstmt = conn.prepareStatement(updatekang);
+            pstmt.setString(1,rsl );
+            pstmt.setString(2,as);
+            pstmt.setString(3,rno);
+            pstmt.executeUpdate();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConn(conn,pstmt,null);
+        }
+
+    }
+
 
 
 

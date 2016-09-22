@@ -11,13 +11,16 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import mxk.v1.dao.loginDAO;
 import mxk.v1.dao.memberDAO;
-import mxk.v1.model.RegisterViewModel;
+import mxk.v1.controller.editKangseupController;
+import mxk.v1.model.kReservationModel;
 import mxk.v1.model.memberModel;
 
+import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -107,12 +110,10 @@ public class memberController implements Initializable {
     @FXML TableColumn cost;
     @FXML TableColumn res;
     @FXML TableColumn pcount;
-    @FXML TableColumn lesson;
-    @FXML TableColumn ldate;
-    @FXML TableColumn lcost;
-    @FXML TableColumn lres;
-    @FXML TableColumn lcount;
-    @FXML TableColumn lcount1;
+
+
+
+
 
 
     private int checkAggree;
@@ -134,9 +135,23 @@ public class memberController implements Initializable {
 
     // 데이터 임시 저장소
     private List<memberModel> memlist;
-    @FXML
-  //  private TableView<> tableView;
     private int num;
+
+
+    //강습신청 테이블
+    @FXML TableColumn lesson;
+    @FXML TableColumn ldate;
+    @FXML TableColumn lcost;
+    @FXML TableColumn lres;
+    @FXML TableColumn lcount;
+    @FXML TableColumn lcount1;
+    @FXML private TableView tableView2;
+     //강습테이블 저장을 위한 리스트
+    private ObservableList<kReservationModel> krmList = null;
+
+
+
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -182,11 +197,85 @@ public class memberController implements Initializable {
         ObservableList wwwl = FXCollections.observableArrayList(wwws);
         www.setItems(wwwl);
 
+        lesson.setCellValueFactory(new PropertyValueFactory<kReservationModel,String>("lesson"));
+        ldate.setCellValueFactory(new PropertyValueFactory<kReservationModel,String>("term"));
+        lcost.setCellValueFactory(new PropertyValueFactory<kReservationModel,String>("lpay"));
+        lres.setCellValueFactory(new PropertyValueFactory<kReservationModel,String>("tday"));
+        lcount.setCellValueFactory(new PropertyValueFactory<kReservationModel,String>("ing"));
+        //lcount1;--버튼용
+
+        krmList = FXCollections.observableArrayList();
+
+        List<kReservationModel> km = memberDAO.createkrm();
+        for(kReservationModel m : km) {
+            //배열에 저장된 게시판 글목록에서 글(행)을 하나씩 읽어와서 ObservableList 에 저장
+            krmList.add(m);
+        }
+
+
+        tableView2.setItems(krmList);
+
+        lcount1.setCellFactory((param) -> new ButtonCell());
 
 
     } // initialize
 
+    //버튼 넣기 코드
+    private class ButtonCell extends TableCell<Disposer.Record, Boolean> {
 
+        final Button cellButton2 = new Button("수정 / 취소");
+
+        ButtonCell() {
+
+
+            cellButton2.setOnAction((t) -> {
+
+
+                FXMLLoader f = new FXMLLoader(getClass().getResource("../view/editKangseup.fxml"));
+
+                Parent root = null;
+                try {
+                    root = f.load();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                Stage stage = new Stage();
+                stage.setScene(new Scene(root));
+
+                int num = ButtonCell.this.getIndex();
+
+                String rno = krmList.get(num).getRno();
+                System.out.println("a:" + rno);
+
+                stage.showAndWait();
+
+                editKangseupController ekc = new editKangseupController();
+                ekc.sendData(rno,krmList,num);
+
+                krmList.clear();
+                List<kReservationModel> km = memberDAO.createkrm();
+                for(kReservationModel m : km) {
+                    //배열에 저장된 게시판 글목록에서 글(행)을 하나씩 읽어와서 ObservableList 에 저장
+                    krmList.add(m);
+                }
+
+
+                tableView2.setItems(krmList);
+
+            });
+        }
+
+        @Override
+        protected void updateItem(Boolean t, boolean empty) {
+            super.updateItem(t, empty);
+            if (!empty) {
+               setGraphic(cellButton2);
+            }
+        }// -- 버튼 넣기!!!!!! 코드
+
+
+    }
 
 
 
